@@ -1,1035 +1,622 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jogo Bíblico Faz Sentido? - Penkal</title>
-
-    <!-- Tailwind CSS CDN -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Livro Ideal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
-      rel="stylesheet"
-    />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-      /* Estilos personalizados */
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-      .faq-answer {
-        transition: max-height 0.3s ease-out;
-        overflow: hidden;
-        max-height: 0;
-      }
-      .faq-answer.show {
-        max-height: 500px; /* Ajuste conforme necessário */
-      }
-      .faq-arrow {
-        transition: transform 0.3s ease-in-out;
-      }
-      .faq-question.active .faq-arrow {
-        transform: rotate(180deg);
-      }
-      /* Estilos para o Modal de Chat */
-      #chat-modal {
-        transition: opacity 0.3s ease;
-      }
-      .modal-content {
-        transition: transform 0.3s ease;
-      }
-      .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #f97316;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+        /* --- Paleta de cores e tipografia --- */
+        body {
+          font-family: 'Poppins', sans-serif;
+          /* novo fundo mais “vivo” */
+          background: linear-gradient(120deg, #e0e7ff 0%, #f5e8ff 100%);
+          color: #1e293b;
         }
-        100% {
-          transform: rotate(360deg);
+        
+        /* Botões principais */
+        .button-primary {
+          background-color: #4f46e5; /* indigo-600 */
+          color: white;
+          font-weight: 700;
+          padding: 0.75rem 2rem;
+          border-radius: 9999px;
+          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+          transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+          cursor: pointer;
+          border: none;
         }
-      }
-      .testimonial-card {
-        transition: transform 0.3s ease;
-      }
-      .testimonial-card:hover {
-        transform: translateY(-10px);
-      }
-      .feature-card {
-        transition: all 0.3s ease;
-      }
-      .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      }
-      .countdown-item {
-        background: linear-gradient(145deg, #2563eb, #1e40af);
-      }
-      /* Estilo para imagem de fundo */
-      .bg-hero-image {
-        background-image: url('https://images.tcdn.com.br/img/img_prod/1323385/1749813514_1_4.png');
-        background-size: cover;
-        background-position: center;
-      }
+        
+        .button-primary:hover {
+          background-color: #4338ca; /* indigo-700 */
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: 0 7px 20px rgba(79, 70, 229, 0.4);
+        }
+        .button-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background-color: #a5b4fc;
+        }
+        
+        /* Labels - opção selecionada */
+        .quiz-label {
+            border: 2px solid #e2e8f0; /* slate-200 */
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .quiz-label:hover {
+          background-color: #eef2ff; /* indigo-50 */
+          border-color: #c7d2fe; /* indigo-200 */
+          cursor: pointer;
+        }
+        .quiz-label.selected {
+          border-color: #4f46e5; /* indigo-600 */
+          background-color: #eef2ff; /* indigo-50 */
+          box-shadow: 0 0 0 2px #c7d2fe;
+        }
+
+        /* Progress bar */
+        .progress-bar-bg { background-color: #e5e7eb; }
+        .progress-bar-fill {
+          background-color: #4f46e5;
+          transition: width 0.4s ease-in-out;
+        }
+
+        /* --- Animações --- */
+        @keyframes fadeSlideDown { 0% { opacity: 0; transform: translateY(-20px); } 100% { opacity: 1; transform: translateY(0); } }
+        .fade-slide-down { animation: fadeSlideDown 0.6s ease forwards; }
+        
+        @keyframes fadeSlide {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-slide { animation: fadeSlide 0.8s ease forwards; }
+
+        .animate-fade-in { opacity: 0; animation: fadeSlideDown 0.6s forwards; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* --- Tela de Boas-vindas --- */
+        #welcome-screen {
+            background: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        .welcome-title {
+            font-size: 2.3rem;
+            font-weight: 800;
+            letter-spacing: 0.07em;
+            text-align: center;
+            color: #4f46e5;
+            text-transform: uppercase;
+            text-shadow:
+                0 3px 14px #8b5cf666, /* sombra roxa mais sutil */
+                0 1px 0 #ffffff99, /* leve glow branco */
+                0 10px 30px rgba(0,0,0,0.08);
+            line-height: 1.22;
+            margin-bottom: 2rem;
+            transition: color 0.35s;
+        }
+        .welcome-btn {
+            background: linear-gradient(90deg, #7c3aed 30%, #4f46e5 100%);
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 800;
+            padding: 1.15rem 4rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 20px #4f46e575, 0 2px 8px #7c3aed55;
+            border: none;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            outline: none;
+            transition: background 0.35s, transform 0.18s;
+        }
+        .welcome-btn:hover {
+            background: linear-gradient(90deg, #a78bfa 0%, #7c3aed 100%);
+            transform: scale(1.06);
+        }
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 24px #8b5cf666, 0 2px 8px #7c3aed33; transform: scale(1);}
+            50% { box-shadow: 0 8px 40px #4f46e5bb, 0 4px 16px #a78bfa88; transform: scale(1.09);}
+        }
+        .btn-pulse-jump {
+          animation: pulse-btn 1.7s infinite cubic-bezier(.7,0,.3,1.2);
+        }
+
+
+        /* --- Tela da Roleta --- */
+        #animation-screen {
+          position: fixed;
+          inset: 0;
+          background: #1f2937;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 1rem;
+          z-index: 1000;
+        }
+        #roulette-wrapper {
+          width: 100%;
+          max-width: none;
+          height: 60vh;
+          max-height: 400px;
+          border-radius: 1rem;
+          background: linear-gradient(135deg, #1f2937, #374151);
+          box-shadow: inset 0 0 30px rgba(0,0,0,0.7);
+          position: relative;
+          overflow: hidden;
+        }
+        #roulette-container { height: 100%; position: relative; }
+        #roulette-container::before, #roulette-container::after {
+          content: ''; position: absolute; top: 0; bottom: 0; width: 20%; z-index: 3;
+        }
+        #roulette-container::before { left: 0; background: linear-gradient(to right, rgba(31, 41, 55, 1), transparent); }
+        #roulette-container::after { right: 0; background: linear-gradient(to left, rgba(31, 41, 55, 1), transparent); }
+
+        #roulette-ticker {
+          position: absolute; top: 50%; left: 50%; width: 6px; height: 120%;
+          background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+          box-shadow: 0 0 20px #ef4444; transform: translate(-50%, -50%); z-index: 20;
+          border-radius: 3px; animation: tickerGlow 2.5s ease-in-out infinite;
+        }
+        @keyframes tickerGlow { 50% { box-shadow: 0 0 35px #f87171; } }
+
+        #roulette-reel {
+          height: 100%; display: flex; align-items: center; position: absolute;
+          left: 0; top: 0; will-change: transform; transition: transform 7s cubic-bezier(0.15, 0.75, 0.3, 1);
+        }
+        .roulette-item {
+          height: 90%; margin: 0 10px; flex-shrink: 0; aspect-ratio: 2/3;
+          border-radius: 12px; overflow: hidden; position: relative;
+          transition: transform 0.3s ease, filter 0.3s ease;
+          background: #374151; filter: brightness(0.7) saturate(0.8);
+        }
+        .roulette-item.glow {
+          transform: scale(1.1);
+          z-index: 10;
+          filter: brightness(1) saturate(1);
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+        }
+        .roulette-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* --- TELA DE RESULTADOS (CSS MELHORADO) --- */
+        #results-screen > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            max-width: 900px;
+            margin: auto;
+            padding: 2rem 1rem;
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+        #main-recommendation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px rgba(79,70,229,0.09);
+            margin-bottom: 2rem;
+            animation: pulse 3.5s infinite ease-in-out;
+        }
+        #main-book-cover {
+            width: 260px;
+            height: 390px;
+            max-width: 100%;
+            object-fit: cover;
+            border-radius: 22px;
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.25);
+        }
+        #main-book-title {
+            font-size: 2.3rem;
+            font-weight: 800;
+            color: #4f46e5;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        #main-book-author {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-top: -0.5rem;
+            text-align: center;
+        }
+        #main-book-summary {
+            max-width: 420px;
+            font-size: 1.05rem;
+            color: #334155;
+            text-align: center;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+        #other-recommendations-wrapper {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 2rem;
+        }
+        #other-recommendations {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        #other-recommendations a {
+            flex: 0 1 120px;
+            max-width: 130px;
+            min-width: 80px;
+            text-align: center;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 0.5rem 0.25rem 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #other-recommendations a:hover {
+            transform: scale(1.06);
+            box-shadow: 0 6px 16px rgba(79,70,229,0.17);
+        }
+        #other-recommendations img {
+            width: 88px;
+            height: 128px;
+            border-radius: 0.75rem;
+            object-fit: cover;
+            margin: 0 auto;
+            box-shadow: 0 2px 7px rgba(79,70,229,0.09);
+        }
+        #other-recommendations h4 {
+            margin-top: 0.6rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #3730a3;
+            padding: 0 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #other-recommendations p {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.1rem;
+        }
+
+        /* --- CONTROLE DE TELAS E RESPONSIVIDADE (CORRIGIDO) --- */
+        .screen {
+            display: none;
+        }
+        #welcome-screen.active {
+            display: flex;
+        }
+        #quiz-form.active,
+        #results-screen.active {
+            display: block;
+        }
+        #animation-screen.active {
+            display: flex;
+        }
+
+        @media (max-width: 600px) {
+          .welcome-title { font-size: 1.1rem; padding: 0 0.5rem;}
+          .welcome-btn { font-size: 1.02rem; padding: 0.85rem 1.8rem;}
+          #main-book-cover { width: 180px; height: 270px; }
+          #main-book-title { font-size: 1.5rem; }
+          #main-book-summary { font-size: 1rem; }
+          #other-recommendations { gap: 0.75rem; }
+          #other-recommendations a { max-width: 100px; }
+          #other-recommendations img { width: 70px; height: 105px; }
+        }
     </style>
-  </head>
-  <body class="bg-gray-50">
-    <!-- Seção 1: Herói -->
-    <header
-      class="relative bg-blue-900 text-white text-center py-24 px-4 overflow-hidden"
-    >
-      <div class="absolute inset-0 bg-hero-image opacity-20"></div>
-      <div class="absolute inset-0 bg-blue-900 opacity-70"></div>
-      <div class="relative z-10 max-w-4xl mx-auto">
-        <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
-          A Diversão que Fortalece sua Fé e Une sua Família
-        </h1>
-        <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8">
-          O Jogo de Cartas que Transforma o Aprendizado Bíblico em um Momento
-          Inesquecível de Conexão e Risadas.
-        </p>
-        <a
-          href="https://www.livrariasfamiliacrista.com.br/livros/faz-sentido-penkal"
-          target="_blank"
-          class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
-        >
-          COMPRAR AGORA E GARANTIR A DIVERSÃO
-        </a>
-        <p class="mt-4 text-sm text-blue-200">
-          Entrega Rápida para Todo o Brasil | Compra 100% Segura
-        </p>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-        <!-- Contador regressivo -->
-        <div class="mt-10">
-          <p class="text-lg font-bold mb-3">Oferta por tempo limitado:</p>
-          <div class="flex justify-center gap-4" id="countdown">
-            <div
-              class="countdown-item flex flex-col items-center p-3 rounded-lg w-20"
-            >
-              <span id="days" class="text-3xl font-bold">00</span>
-              <span class="text-xs">Dias</span>
+    <main class="w-full max-w-4xl mx-auto">
+
+        <!-- 1. Tela de Boas-vindas -->
+        <section id="welcome-screen" class="screen active flex-col items-center justify-center min-h-[75vh]">
+            <h1 class="welcome-title">
+                VOCÊ ESTÁ PRESTES A DESVENDAR O SEGREDO QUE VAI ILUMINAR SUA VIDA.<br>
+                VAMOS JUNTOS NESSA DESCOBERTA ÚNICA E ESPECIAL.
+            </h1>
+            <button id="start-btn" class="welcome-btn btn-pulse-jump">
+                EU QUERO!
+            </button>
+        </section>
+
+        <!-- 2. Formulário em Etapas -->
+        <section id="quiz-form" class="screen bg-white p-6 md:p-12 rounded-2xl shadow-lg">
+             <div class="mb-8">
+                <div class="progress-bar-bg w-full rounded-full h-2"><div id="progress-bar" class="progress-bar-fill h-2 rounded-full"></div></div>
+                <p id="step-counter" class="text-center text-sm text-slate-500 mt-2">Etapa 1 de 4</p>
             </div>
-            <div
-              class="countdown-item flex flex-col items-center p-3 rounded-lg w-20"
-            >
-              <span id="hours" class="text-3xl font-bold">00</span>
-              <span class="text-xs">Horas</span>
+            <form id="book-selector-form">
+                <div id="form-steps"></div>
+                <div class="flex justify-between mt-10">
+                    <button type="button" id="prev-btn" class="bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-full hover:bg-slate-300 transition-colors">Anterior</button>
+                    <button type="button" id="next-btn" class="button-primary py-3 px-6">Próximo</button>
+                    <button type="submit" id="submit-btn" class="hidden button-primary py-3 px-8" style="background-color: #10b981;">Descobrir minha leitura!</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 4. Animação de Roleta -->
+        <section id="animation-screen" class="screen">
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center">Sintonizando a recomendação perfeita...</h2>
+            <div id="roulette-wrapper">
+                <div id="roulette-container">
+                    <div id="roulette-ticker"></div>
+                    <div id="roulette-reel"></div>
+                </div>
             </div>
-            <div
-              class="countdown-item flex flex-col items-center p-3 rounded-lg w-20"
-            >
-              <span id="minutes" class="text-3xl font-bold">00</span>
-              <span class="text-xs">Minutos</span>
+        </section>
+
+        <!-- 5, 6, 7. Tela de Resultados -->
+        <section id="results-screen" class="screen">
+          <div>
+            <h2 class="text-4xl font-bold text-indigo-700 mb-4 text-center">Parabéns!</h2>
+            <p class="text-lg text-slate-600 mb-8 text-center max-w-xl mx-auto">Encontramos a leitura ideal para o seu momento:</p>
+        
+            <div id="main-recommendation">
+              <img id="main-book-cover" src="" alt="Capa do livro" />
+              <div class="text-center">
+                  <h3 id="main-book-title"></h3>
+                  <p id="main-book-author"></p>
+              </div>
+              <p id="main-book-summary"></p>
+              <a id="buy-link" href="#" target="_blank" class="button-primary py-3 px-8 mt-4 inline-block" style="background-color: #10b981;">
+                Quero esse livro
+              </a>
             </div>
-            <div
-              class="countdown-item flex flex-col items-center p-3 rounded-lg w-20"
-            >
-              <span id="seconds" class="text-3xl font-bold">00</span>
-              <span class="text-xs">Segundos</span>
+        
+            <div id="other-recommendations-wrapper" class="w-full mt-12">
+              <h3 class="text-2xl font-semibold text-center mb-6">Você também pode gostar de...</h3>
+              <div id="other-recommendations"></div>
+            </div>
+        
+            <div class="mt-12 text-center">
+              <button id="redo-btn" class="bg-slate-200 text-slate-700 font-semibold py-3 px-8 rounded-full hover:bg-slate-300 transition-colors">Refazer o teste</button>
             </div>
           </div>
-        </div>
-      </div>
-    </header>
-
-    <main>
-      <!-- Seção 2: O Problema -->
-      <section class="py-16 bg-white">
-        <div class="max-w-5xl mx-auto px-6 text-center">
-          <h2 class="text-3xl font-bold text-gray-800 mb-4">
-            Cansado da mesma rotina?
-          </h2>
-          <p class="text-lg text-gray-600 mb-10">
-            Encontre uma nova forma de se conectar com quem você ama.
-          </p>
-          <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-gray-100 p-6 rounded-lg shadow-md">
-              <div class="text-orange-500 text-4xl mb-3">😩</div>
-              <p class="text-gray-700">
-                Você busca atividades que vão além das telas e que realmente
-                envolvam toda a família?
-              </p>
-            </div>
-            <div class="bg-gray-100 p-6 rounded-lg shadow-md">
-              <div class="text-orange-500 text-4xl mb-3">🤔</div>
-              <p class="text-gray-700">
-                Deseja ensinar valores bíblicos de forma divertida, sem que
-                pareça uma aula chata?
-              </p>
-            </div>
-            <div class="bg-gray-100 p-6 rounded-lg shadow-md">
-              <div class="text-orange-500 text-4xl mb-3">🔍</div>
-              <p class="text-gray-700">
-                Procura momentos de qualidade que fortaleçam os laços familiares
-                e espirituais?
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 3: A Solução -->
-      <section class="py-16 bg-blue-50">
-        <div class="max-w-6xl mx-auto px-6">
-          <div class="flex flex-col md:flex-row items-center gap-10">
-            <div class="md:w-1/2">
-              <img
-                src="https://scontent.fldb4-1.fna.fbcdn.net/v/t39.30808-6/500307800_1161005682730096_7817607216927431058_n.jpg?stp=dst-jpg_s640x640_tt6&_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_ohc=GUgO7enhtGQQ7kNvwEVEJPc&_nc_oc=Adk9ZPkYvjmj_-GTcnblu333fgR2DzpcB6VLs0QWe4I2UbM4K1ZNLrPEgEYFKUDLOR4&_nc_zt=23&_nc_ht=scontent.fldb4-1.fna&_nc_gid=oPHzMbUUgJMl8KntFYa3CQ&oh=00_AfNsWLHOBojx-wpEl4oTBn1AhkeZa8JpDJ7aWutvwDjXNQ&oe=685654F9"
-                alt="Jogo Faz Sentido?"
-                class="rounded-lg shadow-2xl w-full"
-              />
-            </div>
-            <div class="md:w-1/2">
-              <h2 class="text-3xl font-bold text-gray-800 mb-6">
-                Apresentamos o "Faz Sentido?" - O Jogo que Transforma Momentos
-                em Memórias
-              </h2>
-              <p class="text-lg text-gray-600 mb-6">
-                Um jogo de cartas inovador que combina diversão, conhecimento
-                bíblico e fortalecimento de laços familiares em uma experiência
-                única.
-              </p>
-              <ul class="space-y-4">
-                <li class="flex items-start">
-                  <svg
-                    class="w-6 h-6 text-green-500 mr-2 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span
-                    >Aprenda histórias bíblicas de forma divertida e
-                    memorável</span
-                  >
-                </li>
-                <li class="flex items-start">
-                  <svg
-                    class="w-6 h-6 text-green-500 mr-2 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Crie momentos de conexão genuína longe das telas</span>
-                </li>
-                <li class="flex items-start">
-                  <svg
-                    class="w-6 h-6 text-green-500 mr-2 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span
-                    >Fortaleça valores cristãos enquanto se diverte com toda a
-                    família</span
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 4: Como Funciona -->
-      <section class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-          <h2 class="text-3xl font-bold text-gray-800 mb-4">
-            Como Funciona o Jogo
-          </h2>
-          <p class="text-lg text-gray-600 mb-12 max-w-3xl mx-auto">
-            Simples de aprender, impossível de não se divertir! Veja como o "Faz
-            Sentido?" vai transformar suas reuniões familiares:
-          </p>
-
-          <div class="grid md:grid-cols-4 gap-8">
-            <div class="feature-card bg-white p-6 rounded-lg shadow-md">
-              <div
-                class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <span class="text-blue-600 text-2xl font-bold">1</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2">Escolha uma Carta</h3>
-              <p class="text-gray-600">
-                Retire uma carta com uma história ou personagem bíblico do
-                baralho.
-              </p>
-            </div>
-
-            <div class="feature-card bg-white p-6 rounded-lg shadow-md">
-              <div
-                class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <span class="text-blue-600 text-2xl font-bold">2</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2">Leia o Desafio</h3>
-              <p class="text-gray-600">
-                Cada carta contém um desafio divertido relacionado ao tema
-                bíblico.
-              </p>
-            </div>
-
-            <div class="feature-card bg-white p-6 rounded-lg shadow-md">
-              <div
-                class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <span class="text-blue-600 text-2xl font-bold">3</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2">Responda "Faz Sentido?"</h3>
-              <p class="text-gray-600">
-                Decida se a situação apresentada faz sentido biblicamente.
-              </p>
-            </div>
-
-            <div class="feature-card bg-white p-6 rounded-lg shadow-md">
-              <div
-                class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
-                <span class="text-blue-600 text-2xl font-bold">4</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2">Aprenda e Divirta-se</h3>
-              <p class="text-gray-600">
-                Ganhe pontos por respostas corretas e aprenda enquanto se
-                diverte!
-              </p>
-            </div>
-          </div>
-
-          <div class="mt-12">
-            <a
-              href="https://www.livrariasfamiliacrista.com.br/livros/faz-sentido-penkal"
-              target="_blank"
-              class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg inline-block"
-            >
-              QUERO JOGAR COM MINHA FAMÍLIA
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 5: Benefícios -->
-      <section class="py-16 bg-blue-900 text-white">
-        <div class="max-w-6xl mx-auto px-6">
-          <h2 class="text-3xl font-bold mb-12 text-center">
-            Benefícios que Vão Além da Diversão
-          </h2>
-
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">🧠</div>
-              <h3 class="text-xl font-bold mb-2">Aprendizado Bíblico</h3>
-              <p>
-                Fixe histórias e ensinamentos bíblicos de forma natural e
-                divertida, sem parecer uma aula.
-              </p>
-            </div>
-
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">👨‍👩‍👧‍👦</div>
-              <h3 class="text-xl font-bold mb-2">Fortalecimento Familiar</h3>
-              <p>
-                Crie memórias duradouras e fortaleça os laços familiares através
-                de momentos de qualidade.
-              </p>
-            </div>
-
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">😄</div>
-              <h3 class="text-xl font-bold mb-2">Diversão Garantida</h3>
-              <p>
-                Risadas e momentos de alegria que tornam o aprendizado bíblico
-                uma experiência prazerosa.
-              </p>
-            </div>
-
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">💬</div>
-              <h3 class="text-xl font-bold mb-2">Comunicação</h3>
-              <p>
-                Estimule conversas significativas sobre fé e valores em um
-                ambiente descontraído.
-              </p>
-            </div>
-
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">🙏</div>
-              <h3 class="text-xl font-bold mb-2">Crescimento Espiritual</h3>
-              <p>
-                Desenvolva o conhecimento bíblico de forma natural, fortalecendo
-                a fé de toda a família.
-              </p>
-            </div>
-
-            <div class="bg-blue-800 bg-opacity-70 p-6 rounded-lg">
-              <div class="text-4xl mb-4">📱</div>
-              <h3 class="text-xl font-bold mb-2">Desconexão Digital</h3>
-              <p>
-                Um momento precioso longe das telas, reconectando a família face
-                a face.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 6: Depoimentos -->
-      <section class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-          <h2 class="text-3xl font-bold text-gray-800 mb-4">
-            O Que Dizem as Famílias que Já Jogam
-          </h2>
-          <p class="text-lg text-gray-600 mb-12 max-w-3xl mx-auto">
-            Veja como o "Faz Sentido?" tem transformado momentos em memórias
-            inesquecíveis:
-          </p>
-
-          <div class="grid md:grid-cols-3 gap-8">
-            <div class="testimonial-card bg-gray-50 p-6 rounded-lg shadow-md">
-              <div class="flex justify-center mb-4 text-yellow-400">
-                <!-- Ícones de estrelas -->
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-              </div>
-              <p class="text-gray-600 italic mb-4">
-                "Nunca vi meus filhos tão interessados em histórias bíblicas!
-                Agora eles pedem para jogar toda semana e estão aprendendo muito
-                mais do que nas aulas da igreja."
-              </p>
-              <p class="font-bold">Família Oliveira</p>
-              <p class="text-sm text-gray-500">São Paulo, SP</p>
-            </div>
-
-            <div class="testimonial-card bg-gray-50 p-6 rounded-lg shadow-md">
-              <div class="flex justify-center mb-4 text-yellow-400">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-              </div>
-              <p class="text-gray-600 italic mb-4">
-                "Como pastor, recomendo a todas as famílias da igreja. É
-                incrível como um jogo simples pode gerar conversas tão profundas
-                sobre a Bíblia e aproximar pais e filhos."
-              </p>
-              <p class="font-bold">Pastor Rodrigo</p>
-              <p class="text-sm text-gray-500">Belo Horizonte, MG</p>
-            </div>
-
-            <div class="testimonial-card bg-gray-50 p-6 rounded-lg shadow-md">
-              <div class="flex justify-center mb-4 text-yellow-400">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                  ></path>
-                </svg>
-              </div>
-              <p class="text-gray-600 italic mb-4">
-                "Compramos para o Natal e virou tradição de domingo à noite. As
-                crianças aprendem sem perceber e nós adultos também nos
-                divertimos muito. Melhor investimento que fizemos!"
-              </p>
-              <p class="font-bold">Família Santos</p>
-              <p class="text-sm text-gray-500">Curitiba, PR</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 7: FAQ -->
-      <section class="py-16 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-6">
-          <h2 class="text-3xl font-bold text-gray-800 mb-12 text-center">
-            Perguntas Frequentes
-          </h2>
-
-          <div class="space-y-6">
-            <div
-              class="faq-question bg-white p-4 rounded-lg shadow-md cursor-pointer"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">
-                  Para qual idade é recomendado o jogo?
-                </h3>
-                <svg
-                  class="faq-arrow w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="faq-answer mt-2 text-gray-600">
-                <p>
-                  O "Faz Sentido?" é ideal para crianças a partir de 7 anos,
-                  adolescentes e adultos. As cartas possuem diferentes níveis de
-                  dificuldade, permitindo que toda a família participe
-                  independentemente da idade ou conhecimento bíblico.
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="faq-question bg-white p-4 rounded-lg shadow-md cursor-pointer"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">Quantas pessoas podem jogar?</h3>
-                <svg
-                  class="faq-arrow w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="faq-answer mt-2 text-gray-600">
-                <p>
-                  O jogo é ideal para 2 a 8 jogadores, perfeito para reuniões
-                  familiares ou encontros com amigos da igreja. Também pode ser
-                  adaptado para grupos maiores em células ou escolas dominicais.
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="faq-question bg-white p-4 rounded-lg shadow-md cursor-pointer"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">
-                  É preciso ter conhecimento bíblico avançado?
-                </h3>
-                <svg
-                  class="faq-arrow w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="faq-answer mt-2 text-gray-600">
-                <p>
-                  Não! O jogo foi desenvolvido para ser acessível a todos os
-                  níveis de conhecimento bíblico. As cartas contêm informações
-                  suficientes para que mesmo iniciantes possam participar e
-                  aprender enquanto jogam.
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="faq-question bg-white p-4 rounded-lg shadow-md cursor-pointer"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">
-                  Quanto tempo dura uma partida?
-                </h3>
-                <svg
-                  class="faq-arrow w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="faq-answer mt-2 text-gray-600">
-                <p>
-                  Uma partida típica dura entre 30 e 45 minutos, mas o tempo
-                  pode variar dependendo do número de jogadores e do ritmo de
-                  jogo. É o tempo perfeito para um momento de qualidade sem
-                  cansar as crianças.
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="faq-question bg-white p-4 rounded-lg shadow-md cursor-pointer"
-            >
-              <div class="flex justify-between items-center">
-                <h3 class="text-lg font-bold">
-                  O jogo é adequado para todas as denominações cristãs?
-                </h3>
-                <svg
-                  class="faq-arrow w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="faq-answer mt-2 text-gray-600">
-                <p>
-                  Sim! O "Faz Sentido?" foca nas histórias e personagens
-                  bíblicos fundamentais, comuns a todas as denominações cristãs.
-                  O conteúdo é respeitoso e centrado na Bíblia, sem abordar
-                  questões doutrinárias específicas.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção 8: CTA Final -->
-      <section class="py-16 bg-blue-900 text-white">
-        <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <h2 class="text-3xl md:text-4xl font-bold mb-6">
-            Transforme os Momentos em Família em Memórias Inesquecíveis
-          </h2>
-          <p class="text-lg md:text-xl mb-8">
-            Não perca mais tempo! Garanta agora mesmo o seu "Faz Sentido?" e
-            comece a criar momentos especiais que fortalecem a fé e unem sua
-            família.
-          </p>
-          <div class="mb-8">
-            <div
-              class="bg-white text-blue-900 font-bold text-xl md:text-2xl p-4 rounded-lg inline-block mb-4"
-            >
-              De <span class="line-through">R$ 59,90</span> por apenas
-              <span class="text-orange-500">R$ 49,90</span>
-            </div>
-            <p class="text-blue-200">Consulte o frete no momento da compra</p>
-          </div>
-          <a
-            href="https://www.livrariasfamiliacrista.com.br/livros/faz-sentido-penkal"
-            target="_blank"
-            class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-10 rounded-lg text-xl shadow-lg inline-block transform hover:scale-105 transition-transform duration-300"
-          >
-            QUERO GARANTIR MEU JOGO AGORA
-          </a>
-          <p class="mt-6 text-sm">
-            <span class="flex items-center justify-center">
-              <svg
-                class="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                ></path>
-              </svg>
-              Pagamento 100% Seguro
-            </span>
-          </p>
-        </div>
-      </section>
+        </section>
     </main>
 
-    <footer class="bg-gray-800 text-white py-10">
-      <div class="max-w-6xl mx-auto px-6">
-        <div class="grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 class="text-xl font-bold mb-4">Faz Sentido?</h3>
-            <p class="text-gray-300">
-              Um produto Penkal vendido por Livrarias Família Cristã.
-            </p>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold mb-4">Contato</h3>
-            <p class="text-gray-300">
-              Email: contato@livrariasfamiliacrista.com.br
-            </p>
-            <p class="text-gray-300">WhatsApp: (43) 99933-3135</p>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold mb-4">Siga-nos</h3>
-            <div class="flex space-x-4">
-              <a
-                href="https://www.facebook.com/familiacristalivrarias"
-                target="_blank"
-                class="text-gray-300 hover:text-white"
-                ><svg
-                  class="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                    clip-rule="evenodd"
-                  /></svg
-              ></a>
-              <a
-                href="https://www.instagram.com/livrariasfamiliacrista/"
-                target="_blank"
-                class="text-gray-300 hover:text-white"
-                ><svg
-                  class="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
-                    clip-rule="evenodd"
-                  /></svg
-              ></a>
-            </div>
-          </div>
-        </div>
-        <div
-          class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm"
-        >
-          <p>
-            &copy; 2024 Penkal & Livrarias Família Cristã. Todos os direitos
-            reservados.
-          </p>
-        </div>
-      </div>
-    </footer>
-
-    <!-- Modal para Chat -->
-    <div
-      id="chat-modal"
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-content bg-white rounded-lg p-6 max-w-md w-full mx-4 transform scale-95 opacity-0 transition-all duration-300"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-gray-800">Pergunte sobre o jogo</h3>
-          <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <p class="text-gray-600 mb-4">
-          Tem alguma dúvida sobre o jogo "Faz Sentido?"? Nosso assistente
-          virtual pode ajudar!
-        </p>
-        <div class="mb-4">
-          <textarea
-            id="user-question"
-            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows="3"
-            placeholder="Digite sua pergunta aqui..."
-          ></textarea>
-        </div>
-        <div id="response-area" class="bg-gray-50 p-4 rounded-lg mb-4 hidden">
-          <div id="loading" class="flex justify-center py-4 hidden">
-            <div class="loader"></div>
-          </div>
-          <div id="response-text" class="text-gray-700"></div>
-        </div>
-        <button
-          id="ask-button"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg"
-        >
-          Enviar Pergunta
-        </button>
-      </div>
-    </div>
-
-    <!-- Botão flutuante para abrir o modal -->
-    <div class="fixed bottom-6 right-6 z-40">
-      <button
-        id="open-modal"
-        class="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300"
-      >
-        <svg
-          class="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-          ></path>
-        </svg>
-      </button>
-    </div>
-
     <script>
-      // FAQ Toggle
-      document.querySelectorAll('.faq-question').forEach((question) => {
-        question.addEventListener('click', () => {
-          const answer = question.querySelector('.faq-answer');
-          const isActive = question.classList.contains('active');
+        // --- CONFIGURAÇÃO E DADOS ---
+        const books = [
+            { id: 1, title: 'Diário de uma Ansiosa', author: 'Estela Costa', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/diario_de_uma_ansiosa_estela_costa_31644_1_26f8f8542b75d661f51d1e47a4ed5d19.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/diario-de-uma-ansiosa-estela-costa', tags: ['mulher', 'geral', 'ansiedade-emocoes', 'paz-equilibrio', 'forca-coragem', 'devocional'] },
+            { id: 2, title: 'Devocional de todo Homem', author: 'Equipe Penkal', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_de_todo_homem_equipe_teologica_penkal_30804_1_9e39b2317b145efd9b076d63014f76a5.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/devocional-de-todo-homem-equipe-teologica-penkal', tags: ['homem', 'equilibrio-proposito', 'intimidade-deus', 'forjar-carater', 'devocional'] },
+            { id: 3, title: 'Devocional de toda Mulher', author: 'Estela Costa', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_de_toda_mulher_estela_costa_30806_1_73a5eccc540e309edf52801783c65c79.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/devocional-de-toda-mulher-estela-costa', tags: ['mulher', 'equilibrio-proposito', 'intimidade-deus', 'paz-equilibrio', 'devocional'] },
+            { id: 4, title: 'Quarto de Guerra', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/quarto_de_guerra_isabelle_s_alves_28753_1_47536dec3121befc2e74fc0a2477a47d.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/quarto-de-guerra', tags: ['geral', 'familia', 'oracao-fe', 'forca-coragem', 'intimidade-deus', 'historia'] },
+            { id: 5, title: 'Eu, Minhas Lutas Internas e Deus', author: 'Estela Costa', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/eu_minhas_lutas_internas_e_deus_identificando_as_lutas_emocionais_e_espirituais_estela_costa_29663_1_88d7d577efcbddbd84f1e1a2800feedd.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/eu-minhas-lutas-internas-e-deus-identificando-as-lutas-emocionais-e-espirituais-estela-costa', tags: ['mulher', 'geral', 'lutas-medo', 'forca-coragem', 'paz-equilibrio', 'estudo-pratico'] },
+            { id: 6, title: 'Eu, Minha Ansiedade e Deus', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/eu_minha_ansiedade_e_deus_isabelle_s_alves_29331_1_b56a67b53cf81029d51d1b143ab50918.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/eu-minha-ansiedade-e-deus-isabelle-s-alves', tags: ['mulher', 'jovem', 'ansiedade-emocoes', 'paz-equilibrio', 'intimidade-deus', 'devocional'] },
+            { id: 7, title: 'Devocional Quarto de Guerra', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_quarto_de_guerra_29177_1_022c3d42e19e03c528944fd5b3354e3a.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/devocional-quarto-de-guerra', tags: ['geral', 'familia', 'oracao-fe', 'intimidade-deus', 'forca-coragem', 'devocional'] },
+            { id: 8, title: 'Devocional A Forja', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_a_forja_isabelle_s_alves_29257_1_046fee9f4d7a9341d030e78cb5757f51.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/devocional-a-forja-isabelle-s-alves', tags: ['jovem', 'geral', 'lutas-medo', 'forjar-carater', 'forca-coragem', 'devocional'] },
+            { id: 9, title: '40 Dias com DivertidaMente', author: 'Editora Penkal', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_40_dias_com_divertidamente_uma_jornada_biblica_atraves_das_emocoes_27815_1_2f42e309d8de4d9d0f4391fb3116dee8.jpg', link: 'https://www.livrariasfamiliacrista.com.br/devocional-40-dias-com-divertidamente-uma-jornada-biblica-atraves-das-emocoes', tags: ['jovem', 'familia', 'ansiedade-emocoes', 'paz-equilibrio', 'devocional'] },
+            { id: 10, title: 'Vencendo a Ansiedade com Deus Pai', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/vencendo_a_ansiedade_com_deus_pai_28751_1_f8529cb87ae8f9fc647799ad94e26537.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/vencendo-a-ansiedade-com-deus-pai', tags: ['geral', 'jovem', 'ansiedade-emocoes', 'paz-equilibrio', 'intimidade-deus', 'devocional'] },
+            { id: 12, title: 'Marta, Maria e o Equilíbrio Espiritual', author: 'Ana Clara Souza', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/marta_maria_e_o_equilibrio_espiritual_como_as_escolhas_diarias_de_servico_moldam_nossa_vida_e_espiri_29753_1_5467caf056fa6402a553c9c97d52051f.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/marta-maria-e-o-equilibrio-espiritual-como-as-escolhas-diarias-de-servico-moldam-nossa-vida-e-espiritualidade-ana', tags: ['mulher', 'equilibrio-proposito', 'paz-equilibrio', 'inspiracao-biblica', 'estudo-pratico'] },
+            { id: 13, title: 'Educando Meninos', author: 'João Henrique Castro', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/educando_meninos_forjando_o_carater_de_meninos_para_se_tornarem_homens_de_deus_joao_henrique_castro_29659_1_4028deda0b5f8a72a487f69053cb36eb.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/educando-meninos-forjando-o-carater-de-meninos-para-se-tornarem-homens-de-deus-joao-henrique-castro', tags: ['homem', 'familia', 'educar-filhos', 'forjar-carater', 'estudo-pratico'] },
+            { id: 14, title: 'O Poder da Mente & A Força do Medo', author: 'Adriel Ribeiro', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/o_poder_da_mente_a_forca_do_medo_adriel_ribeiro_29241_1_506f83892691d10851265aff0c32cedb.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/o-poder-da-mente-a-forca-do-medo-adriel-ribeiro', tags: ['geral', 'lutas-medo', 'forca-coragem', 'estudo-pratico'] },
+            { id: 15, title: 'Café com as Mulheres da Bíblia', author: 'Isabelle S. Alves', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/cafe_com_as_mulheres_da_biblia_isabelle_s_alves_26398_1_6c683e4d73d2f26e9d33df989a4c76b8.jpg', link: 'https://www.livrariasfamiliacrista.com.br/cafe-com-as-mulheres-da-biblia-isabelle-s-alves', tags: ['mulher', 'inspiracao-biblica', 'intimidade-deus', 'devocional'] },
+            { id: 16, title: 'Um Homem Segundo o Coração de Deus', author: 'Adriel Ribeiro', cover: 'https://images.tcdn.com.br/img/img_prod/1323385/devocional_um_homem_segundo_o_coracao_de_deus_adriel_ribeiro_29261_1_61b71bd5717ef5709f55c5b693ffb70b.jpg', link: 'https://www.livrariasfamiliacrista.com.br/livros/devocional-um-homem-segundo-o-coracao-de-deus-adriel-ribeiro', tags: ['homem', 'equilibrio-proposito', 'forjar-carater', 'intimidade-deus', 'devocional'] }
+        ];
+        const quizData = [
+            { name: 'q1', legend: 'Primeiro, para quem é esta leitura?', options: [ { value: 'mulher', text: 'Para uma mulher' }, { value: 'homem', text: 'Para um homem' }, { value: 'jovem', text: 'Para um(a) jovem' }, { value: 'familia', text: 'Para a família ou educar os filhos' }, { value: 'geral', text: 'Para qualquer pessoa' } ]},
+            { name: 'q2', legend: 'Qual é o principal desafio que você busca ajuda para superar?', options: [ { value: 'ansiedade-emocoes', text: 'Ansiedade e controle das emoções' }, { value: 'lutas-medo', text: 'Lutas internas e o medo' }, { value: 'oracao-fe', text: 'Fortalecer a vida de oração e a fé' }, { value: 'equilibrio-proposito', text: 'Encontrar equilíbrio e propósito' }, { value: 'educar-filhos', text: 'Educar os filhos nos caminhos de Deus' } ]},
+            { name: 'q3', legend: 'O que você mais deseja encontrar neste livro?', options: [ { value: 'paz-equilibrio', text: 'Paz, conforto e equilíbrio espiritual' }, { value: 'forca-coragem', text: 'Força, coragem e superação' }, { value: 'intimidade-deus', text: 'Mais intimidade com Deus' }, { value: 'inspiracao-biblica', text: 'Inspiração em histórias da Bíblia' }, { value: 'forjar-carater', text: 'Ferramentas para forjar um caráter de fé' } ]},
+            { name: 'q4', legend: 'Qual formato de leitura mais te agrada?', options: [ { value: 'devocional', text: 'Devocional com reflexões diárias' }, { value: 'estudo-pratico', text: 'Estudo prático e aprofundado' }, { value: 'historia', text: 'Uma história ou romance envolvente' } ]}
+        ];
 
-          // Fechar todas as outras respostas abertas
-          document
-            .querySelectorAll('.faq-question.active')
-            .forEach((activeQuestion) => {
-              if (activeQuestion !== question) {
-                activeQuestion.classList.remove('active');
-                activeQuestion
-                  .querySelector('.faq-answer')
-                  .classList.remove('show');
-              }
+        // --- ELEMENTOS DA DOM ---
+        const screens = { welcome: document.getElementById('welcome-screen'), quiz: document.getElementById('quiz-form'), animation: document.getElementById('animation-screen'), results: document.getElementById('results-screen') };
+        const startBtn = document.getElementById('start-btn');
+        const form = document.getElementById('book-selector-form');
+        const formStepsContainer = document.getElementById('form-steps');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const stepCounter = document.getElementById('step-counter');
+        const redoBtn = document.getElementById('redo-btn');
+        
+        // --- LÓGICA DO QUIZ ---
+        let currentStep = 0;
+        let highlightInterval;
+        const showScreen = (screenName) => { Object.values(screens).forEach(s => s.classList.remove('active')); screens[screenName].classList.add('active'); };
+
+        const renderQuizStep = () => {
+            const stepData = quizData[currentStep];
+            formStepsContainer.innerHTML = `<fieldset class="form-step active space-y-4 fade-slide-down">${stepData.options.map(opt => `<label class="quiz-label flex items-center p-4 border-2 rounded-lg cursor-pointer"><input type="radio" name="${stepData.name}" value="${opt.value}" class="h-5 w-5 opacity-0 absolute" required><span class="ml-4 text-base text-slate-700">${opt.text}</span></label>`).join('')}</fieldset>`;
+            const fieldset = formStepsContainer.querySelector('fieldset');
+            const legend = document.createElement('legend');
+            legend.className = "text-xl md:text-2xl font-semibold text-slate-800 mb-6";
+            legend.textContent = stepData.legend;
+            fieldset.prepend(legend);
+            updateFormControls();
+            attachLabelListeners();
+        };
+
+        const updateFormControls = () => {
+            progressBar.style.width = `${((currentStep + 1) / quizData.length) * 100}%`;
+            stepCounter.textContent = `Etapa ${currentStep + 1} de ${quizData.length}`;
+            prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-block';
+            nextBtn.style.display = currentStep === quizData.length - 1 ? 'none' : 'inline-block';
+            submitBtn.style.display = currentStep === quizData.length - 1 ? 'inline-block' : 'none';
+            const isStepComplete = form.elements[`q${currentStep + 1}`]?.value;
+            nextBtn.disabled = !isStepComplete;
+        };
+
+        const attachLabelListeners = () => {
+            const labels = document.querySelectorAll('.quiz-label');
+            labels.forEach(label => {
+                const radio = label.querySelector('input');
+                if (radio.value === form.elements[radio.name]?.value) {
+                    label.classList.add('selected');
+                }
+                label.addEventListener('click', (e) => {
+                    labels.forEach(l => l.classList.remove('selected'));
+                    e.currentTarget.classList.add('selected');
+                    e.currentTarget.querySelector('input').checked = true;
+                    nextBtn.disabled = false;
+                });
             });
+        };
 
-          // Alternar a resposta clicada
-          question.classList.toggle('active');
-          answer.classList.toggle('show');
-        });
-      });
+        startBtn.addEventListener('click', () => { showScreen('quiz'); renderQuizStep(); });
+        
+        nextBtn.addEventListener('click', () => { if (currentStep < quizData.length - 1) { currentStep++; renderQuizStep(); } });
+        prevBtn.addEventListener('click', () => { if (currentStep > 0) { currentStep--; renderQuizStep(); } });
+        redoBtn.addEventListener('click', () => { form.reset(); currentStep = 0; showScreen('welcome'); });
 
-      // Modal de Chat
-      const modal = document.getElementById('chat-modal');
-      const openModalBtn = document.getElementById('open-modal');
-      const closeModalBtn = document.getElementById('close-modal');
-      const askButton = document.getElementById('ask-button');
-      const userQuestion = document.getElementById('user-question');
-      const responseArea = document.getElementById('response-area');
-      const loadingIndicator = document.getElementById('loading');
-      const responseText = document.getElementById('response-text');
+        function findBestBooks(choices) {
+            const scoredBooks = books.map(book => ({
+                ...book,
+                score: book.tags.reduce((acc, tag) => acc + (choices.includes(tag) ? 1 : 0), 0)
+            }));
 
-      openModalBtn.addEventListener('click', () => {
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-          modal
-            .querySelector('.modal-content')
-            .classList.add('scale-100', 'opacity-100');
-        }, 10);
-      });
+            const maxScore = Math.max(...scoredBooks.map(b => b.score));
+            const bestBooks = scoredBooks.filter(b => b.score === maxScore);
 
-      closeModalBtn.addEventListener('click', closeModal);
-
-      function closeModal() {
-        modal
-          .querySelector('.modal-content')
-          .classList.remove('scale-100', 'opacity-100');
-        setTimeout(() => {
-          modal.classList.add('hidden');
-          responseArea.classList.add('hidden');
-          userQuestion.value = '';
-        }, 300);
-      }
-
-      askButton.addEventListener('click', () => {
-        const question = userQuestion.value.trim();
-        if (question) {
-          responseArea.classList.remove('hidden');
-          loadingIndicator.classList.remove('hidden');
-          responseText.textContent = '';
-
-          // Simulação de resposta da API
-          setTimeout(() => {
-            loadingIndicator.classList.add('hidden');
-
-            // Respostas pré-definidas
-            let response =
-              "Obrigado pela sua pergunta! O jogo 'Faz Sentido?' é um jogo de cartas educativo que ajuda a aprender histórias bíblicas de forma divertida. Para mais detalhes, recomendamos entrar em contato pelo WhatsApp ou email.";
-
-            if (
-              question.toLowerCase().includes('idade') ||
-              question.toLowerCase().includes('anos')
-            ) {
-              response =
-                "O jogo 'Faz Sentido?' é recomendado para crianças a partir de 7 anos, adolescentes e adultos. As cartas possuem diferentes níveis de dificuldade, permitindo que toda a família participe!";
-            } else if (
-              question.toLowerCase().includes('preço') ||
-              question.toLowerCase().includes('valor') ||
-              question.toLowerCase().includes('custo')
-            ) {
-              response =
-                "Atualmente o jogo 'Faz Sentido?' está com um preço promocional de R$ 49,90 (valor original: R$ 59,90). Aproveite esta oferta por tempo limitado!";
-            } else if (
-              question.toLowerCase().includes('entrega') ||
-              question.toLowerCase().includes('frete')
-            ) {
-              response =
-                'Oferecemos entrega para todo o Brasil! O frete é calculado no momento da compra no site da Livrarias Família Cristã.';
-            } else if (
-              question.toLowerCase().includes('conteúdo') ||
-              question.toLowerCase().includes('cartas')
-            ) {
-              response =
-                'O jogo contém mais de 100 cartas com histórias e personagens bíblicos, manual de instruções e vem em uma caixa resistente. Cada carta apresenta um desafio divertido relacionado ao tema.';
+            for (let i = bestBooks.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bestBooks[i], bestBooks[j]] = [bestBooks[j], bestBooks[i]];
             }
 
-            responseText.textContent = response;
-          }, 1500);
-        }
-      });
-
-      // Contador regressivo
-      function updateCountdown() {
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 3); // Define a data final para 3 dias a partir de hoje
-        endDate.setHours(23, 59, 59, 0);
-
-        const now = new Date();
-        const diff = endDate - now;
-
-        if (diff <= 0) {
-          document.getElementById('days').textContent = '00';
-          document.getElementById('hours').textContent = '00';
-          document.getElementById('minutes').textContent = '00';
-          document.getElementById('seconds').textContent = '00';
-          return;
+            const otherBooks = scoredBooks.filter(b => b.score < maxScore).sort((a,b) => b.score - a.score);
+            return bestBooks.concat(otherBooks);
         }
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        // --- LÓGICA DA ANIMAÇÃO E RESULTADOS ---
+        const tickSynth = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.1 }, volume: -24 }).toDestination();
+        const winSynth = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.4 }, volume: -12 }).toDestination();
 
-        document.getElementById('days').textContent = days
-          .toString()
-          .padStart(2, '0');
-        document.getElementById('hours').textContent = hours
-          .toString()
-          .padStart(2, '0');
-        document.getElementById('minutes').textContent = minutes
-          .toString()
-          .padStart(2, '0');
-        document.getElementById('seconds').textContent = seconds
-          .toString()
-          .padStart(2, '0');
-      }
+        const highlightCenterItem = () => {
+            const reel = document.getElementById('roulette-reel');
+            const items = [...reel.children];
+            if (items.length === 0) return;
+            const container = document.getElementById('roulette-container');
+            const containerCenter = container.getBoundingClientRect().left + container.offsetWidth / 2;
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const itemCenter = rect.left + rect.width / 2;
+                const dist = Math.abs(containerCenter - itemCenter);
+                if (dist < rect.width / 2) {
+                    if (!item.classList.contains('glow')) {
+                        items.forEach(i => i.classList.remove('glow'));
+                        item.classList.add('glow');
+                        tickSynth.triggerAttackRelease("C6", "8n", Tone.now());
+                    }
+                } else {
+                    item.classList.remove('glow');
+                }
+            });
+        };
 
-      updateCountdown();
-      setInterval(updateCountdown, 1000);
+        const runRouletteAnimation = (recommendations, userChoices) => {
+            const reel = document.getElementById('roulette-reel');
+            const container = document.getElementById('roulette-container');
+            reel.innerHTML = ''; reel.style.transition = 'none'; reel.style.transform = 'translateX(0)';
+            
+            const ITEM_HEIGHT = container.clientHeight * 0.9;
+            const ITEM_WIDTH = ITEM_HEIGHT * (2/3);
+            const ITEM_MARGIN = 20;
+            const TOTAL_ITEM_WIDTH = ITEM_WIDTH + ITEM_MARGIN;
+            const REEL_REPEAT = 15;
 
-      // Fechar o modal ao clicar fora dele
-      window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeModal();
-        }
-      });
+            let reelItems = [];
+            for (let i = 0; i < REEL_REPEAT; i++) { reelItems.push(...[...books].sort(() => Math.random() - 0.5)); }
+            
+            const winner = recommendations[0];
+            const winnerIndex = reelItems.length - 10;
+            reelItems[winnerIndex] = winner;
+
+            reelItems.forEach(book => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'roulette-item';
+                itemDiv.style.width = `${ITEM_WIDTH}px`;
+                itemDiv.style.height = `${ITEM_HEIGHT}px`;
+                itemDiv.innerHTML = `<img src="${book.cover}" alt="${book.title}" onerror="this.onerror=null;this.src='https://placehold.co/400x600/e0e7ff/3730a3?text=Capa';">`;
+                reel.appendChild(itemDiv);
+            });
+            
+            const finalPosition = (winnerIndex * TOTAL_ITEM_WIDTH) - (container.offsetWidth / 2) + (TOTAL_ITEM_WIDTH / 2) + (Math.random() * (ITEM_WIDTH - 60) - ((ITEM_WIDTH - 60) / 2));
+            
+            if (highlightInterval) clearInterval(highlightInterval);
+
+            setTimeout(() => {
+                reel.style.transition = `transform 7s cubic-bezier(0.15, 0.75, 0.3, 1)`;
+                reel.style.transform = `translateX(-${finalPosition}px)`;
+                highlightInterval = setInterval(highlightCenterItem, 100);
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(highlightInterval);
+                const finalWinnerElement = reel.children[winnerIndex];
+                if(finalWinnerElement) {
+                    [...reel.children].forEach(child => child.classList.remove('glow'));
+                    finalWinnerElement.classList.add('glow');
+                }
+                winSynth.triggerAttackRelease(["C4", "E4", "G4"], "0.5");
+            }, 7100);
+            
+            setTimeout(() => {
+                displayResults(recommendations, userChoices);
+                showScreen('results');
+            }, 8000);
+        };
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const userChoices = Array.from(formData.values());
+            const recommendations = findBestBooks(userChoices);
+            showScreen('animation');
+            Tone.start().then(() => runRouletteAnimation(recommendations, userChoices));
+        });
+        
+        const createPersonalizedSummary = (book, choices) => {
+             const reasonMap = { 'ansiedade-emocoes': `para te ajudar a encontrar paz em meio à ansiedade e às emoções.`, 'lutas-medo': `para te dar força e coragem para vencer suas lutas internas e o medo.`, 'oracao-fe': `perfeito para fortalecer sua vida de oração e aprofundar sua fé.`, 'equilibrio-proposito': `para te guiar na busca por mais equilíbrio e propósito no dia a dia.`, 'educar-filhos': `com ferramentas valiosas para educar seus filhos nos caminhos do Senhor.` };
+             const mainReasonTag = choices[1];
+             const phrase = reasonMap[mainReasonTag] || `uma leitura que vai falar diretamente ao seu coração.`;
+             return `Identificamos que "${book.title}" é a leitura ideal para você, ${phrase}`;
+        };
+
+        const displayResults = (recommendations, userChoices) => {
+            if (!recommendations || recommendations.length === 0) {
+                console.error("Nenhuma recomendação encontrada!");
+                return;
+            }
+            
+            const mainBook = recommendations[0];
+            const otherBooks = recommendations.filter(b => b.id !== mainBook.id).slice(0, 4);
+            document.getElementById('main-book-cover').src = mainBook.cover;
+            document.getElementById('main-book-title').textContent = mainBook.title;
+            document.getElementById('main-book-author').textContent = `por ${mainBook.author}`;
+            document.getElementById('main-book-summary').textContent = createPersonalizedSummary(mainBook, userChoices);
+            document.getElementById('buy-link').href = mainBook.link;
+
+            const otherRecContainer = document.getElementById('other-recommendations');
+            const otherRecWrapper = document.getElementById('other-recommendations-wrapper');
+            otherRecContainer.innerHTML = '';
+            
+            if (otherBooks.length > 0) {
+                 otherRecWrapper.classList.remove('hidden');
+                 otherBooks.forEach(book => { otherRecContainer.innerHTML += `<a href="${book.link}" target="_blank"><img src="${book.cover}" alt="Capa de ${book.title}" /><h4>${book.title}</h4><p>${book.author}</p></a>`; });
+            } else {
+                 otherRecWrapper.classList.add('hidden');
+            }
+        };
     </script>
-  </body>
+</body>
 </html>
